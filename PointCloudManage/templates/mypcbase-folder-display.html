@@ -1,0 +1,417 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}展示页面{% endblock %}
+
+{% block css %}
+{% endblock %}
+
+{% block breadcrumb %}
+<!-- Content Header (Page header) -->
+<section class="content-header">
+  <h1>
+    我的点云模型库
+    <small>当前目录：{{folder_name}}</small>
+    <button id="back-btn" class="btn btn-xs btn-success">返回上一级</button>
+    <button id="upload-btn" class="btn btn-xs btn-success">上传模型</button>
+    <button id="download-all-btn" class="btn btn-xs btn-primary">下载当前目录</button>
+    <button id="delete-all-btn" class="btn btn-xs btn-warning">清空当前目录</button>
+  </h1>
+  <ol class="breadcrumb">
+    <li><a href="/index/"><i class="fa fa-user"></i>主页</a></li>
+    <li><a href='/mypcbase-display-page/'><i class="fa fa-folder"></i>我的点云模型库</a></li>
+    <li class="active"><a><i class="fa fa-folder"></i>{{folder_name}}</a></li>
+  </ol>
+</section>
+{% endblock %}
+
+{% block content %}
+   <!-- Main content -->
+    <section class="content">
+          <div class="container">
+            <div class="mainbody padding-t20">
+              <div id="display-body" class='row'>
+              {% for ele in pc_names %}
+                <div id="display-{{ele.pc_name}}" class='col-xs-4 margin-b20'>
+                  <div class='thumbnail radius-0 border-0 margin-b0'>
+                    <div id="canvas-{{ele.pc_name}}"></div>
+                    <div id="progress-{{ele.pc_name}}" class="progress progress-striped">
+                        <div id="progress-bar-{{ele.pc_name}}" class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width:0%">
+                            0%
+                        </div>
+                    </div>
+                    <div class="text-center">
+                      <span class="label label-default">模型名：{{ele.pc_name}}</span>
+                    </div>
+                    <div class="text-center">
+                      <button id="vis-btn-{{ele.pc_name}}" class="btn btn-xs btn-primary">查看</button>
+                      <button id="download-btn-{{ele.pc_name}}" class="btn btn-xs btn-primary">下载</button>
+                      <button id="move-btn-{{ele.pc_name}}" class="btn btn-xs btn-warning">移动</button>
+                      <button id="delete-btn-{{ele.pc_name}}" class="btn btn-xs btn-warning">删除</button>
+                      {% if ele.upsampled %}
+                        <button id="upsample-btn-{{ele.pc_name}}" class="btn btn-xs btn-success hidden">上采样</button>
+                        <button id="vis-upsample-btn-{{ele.pc_name}}" class="btn btn-xs btn-success">查看上采样</button>
+                      {% else %}
+                        <button id="upsample-btn-{{ele.pc_name}}" class="btn btn-xs btn-success">上采样</button>
+                        <button id="vis-upsample-btn-{{ele.pc_name}}" class="btn btn-xs btn-success hidden">查看上采样</button>
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+              {% endfor %}
+              </div>
+              {% if show_pages %}
+              <div class="row text-center">
+                <ul class="pagination">
+                  {% if disable_first_page %}
+                  <li class="disabled"><a>首页</a></li>
+                  {% else %}
+                  <li><a href="/mypcbase-folder-display-page/?folder_name={{folder_name}}&request_page_id={{first_page_id}}">首页</a></li>
+                  {% endif %}
+                  
+                  {% if disable_prev_page %}
+                  <li class="disabled"><a>&laquo;</a></li>
+                  {% else %}
+                  <li><a href="/mypcbase-folder-display-page/?folder_name={{folder_name}}&request_page_id={{prev_page_id}}">&laquo;</a></li>
+                  {% endif %}
+
+                  {% for page_id in page_ids %}
+                  {% if page_id == request_page_id %}
+                  <li class="active"><a>{{page_id}}</a></li>
+                  {% else %}
+                  <li><a href="/mypcbase-folder-display-page/?folder_name={{folder_name}}&request_page_id={{page_id}}">{{page_id}}</a></li>
+                  {% endif %}
+                  {% endfor %}
+
+                  {% if disable_next_page %}
+                  <li class="disabled"><a>&raquo;</a></li>
+                  {% else %}
+                  <li><a href="/mypcbase-folder-display-page/?folder_name={{folder_name}}&request_page_id={{next_page_id}}">&raquo;</a></li>
+                  {% endif %}
+                  
+                  {% if disable_last_page %}
+                  <li class="disabled"><a>末页</a></li>
+                  {% else %}
+                  <li><a href="/mypcbase-folder-display-page/?folder_name={{folder_name}}&request_page_id={{last_page_id}}">末页</a></li>
+                  {% endif %}
+                </ul>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="modal fade" id="move-box" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" data-backdrop='static'>
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title" id="myModalLabel"><strong>提示</strong></h4>
+                    </div>
+                    <div class="modal-body">
+                      <div class="form-group">
+                        <label id="move-box-pc-name-label"></label>
+                        <label for="name">请选择目标目录</label>
+                        <select id="move-box-folder-name-select" class="form-control">
+                            {% for item_name in folder_names %}
+                            {% if item_name != folder_name %}
+                              <option>{{item_name}}</option>
+                            {% endif %}
+                            {% endfor %}
+                        </select>
+                      </div>
+                      <div align="right">
+                        <button class="btn btn-sm btn-primary" id="move-box-submit-btn">移动</button>
+                        <button class="btn btn-sm btn-secondary" id="move-box-cancel-btn">取消</button>
+                      </div>
+                    </div>
+                </div>
+            </div>
+          </div>
+          
+          <div class="modal fade" id="vis-type-box" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" data-backdrop='static'>
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title" id="myModalLabel"><strong>提示</strong></h4>
+                    </div>
+                    <div class="modal-body">
+                      <div class="form-group">
+                        <label id="vis-type-box-pc-name-label"></label>
+                        <label for="name">请选择查看类型</label>
+                        <select id="vis-type-box-select" class="form-control">
+                          <option>obj</option>
+                          <option>ply</option>
+                        </select>
+                      </div>
+                      <div align="right">
+                        <button class="btn btn-sm btn-primary" id="vis-type-box-submit-btn">查看</button>
+                        <button class="btn btn-sm btn-secondary" id="vis-type-box-cancel-btn">取消</button>
+                      </div>
+                    </div>
+                </div>
+            </div>
+          </div>
+    </section>
+{% endblock %}
+
+
+{% block script %}
+
+<script>
+$(function () {
+  let opts = {
+    'height_ratio': 3.0,
+    'scale_ratio': 150
+  };
+  let texture_file_path = '/static/pcupsample/texture.png';
+  let input_file;
+
+  let delete_errcode2msg = {
+    1: '原因未知',
+    2: '模型不存在或已被删除',
+    3: '模型已经存在于回收站'
+  };
+
+  let upsample_errcode2msg = {
+    1: '原因未知',
+    2: '上采样点云已存在',
+    3: '点云文件格式有误'
+  };
+
+  let move_errcode2msg = {
+    1: '原因未知',
+    2: '目标目录不存在',
+    3: '目标目录已存在该文件'
+  };
+
+  $('#back-btn').click(function () {
+    window.location.href = '/mypcbase-display-page/';
+  });
+
+  $('#upload-btn').click(function () {
+    window.location.href = '/mypcbase-upload-page/';
+  });
+
+  $('#download-all-btn').click(function () {
+    openLoadingBox('正在下载，请稍等...')
+    $.ajax({
+      url: '/mypcbase-folder-zip-all/',
+      type: 'GET',
+      data: { 'folder_name': '{{folder_name}}' },
+      dataType: 'JSON',
+      success: function (data) {
+        closeLoadingBox();
+        if (data.succ == 1) {
+          openSuccMsgBox('<strong>恭喜！</strong> 下载完成');
+          window.location.href = data.zipfile_url;
+        } else {
+          if (data.errcode == 0) { openErrMsgBox('当前没有模型可以下载。'); }
+          else { openErrMsgBox('<strong>抱歉！</strong> 下载失败'); }
+        }
+      }
+    });
+  });
+
+  $('#delete-all-btn').click(function () {
+    openLoadingBox('正在删除，请稍等...')
+    $.ajax({
+      url: '/mypcbase-folder-delete-all/',
+      type: 'GET',
+      data: { 'folder_name': '{{folder_name}}' },
+      dataType: 'JSON',
+      success: function (data) {
+        closeLoadingBox();
+        if (data.succ == 1) {
+          let children = $('#display-body').children('div');
+          for (let id = 0; id < children.length; id++) { $(children[id]).remove(); }
+          openSuccMsgBox('<strong>恭喜！</strong> 删除完成，已全部移至 <a href="/recyclebin-display-page/"><strong>回收站</strong></a> 。');
+        } else {
+          openErrMsgBox('<strong>抱歉！</strong> 删除失败');
+        }
+      }
+    });
+  });
+
+  $('#move-box-submit-btn').click(function () {
+    let pc_name = $('#move-box-pc-name-label').text();
+    let source_folder_name = '{{folder_name}}';
+    let dest_folder_name = $('#move-box-folder-name-select').val();
+
+    openLoadingBox('正在处理，请稍等...')
+    $.ajax({
+      url: '/mypcbase-folder-move-pc/',
+      type: 'GET',
+      data: { 'pc_name': pc_name, 'source_folder_name': source_folder_name, 'dest_folder_name': dest_folder_name },
+      dataType: 'JSON',
+      success: function (data) {
+        closeLoadingBox();
+        if (data.succ == 1) {
+          $('#display-'+pc_name).hide();
+          $('#move-box').modal('hide');
+          openSuccMsgBox('<strong>恭喜！</strong> 处理完成，已将模型移至 <a href="/mypcbase-folder-display-page/?folder_name='+dest_folder_name+'"><i class="fa fa-folder"></i><strong>'+dest_folder_name+'</strong></a> 。');
+        } else {
+          openErrMsgBox('<strong>抱歉！</strong> 处理失败：'+move_errcode2msg[data.errcode]);
+        }
+      }
+    });
+  });
+
+  $('#move-box-cancel-btn').click(function () {
+    $('#move-box').modal('hide');
+  });
+
+
+
+
+  $('#vis-type-box-submit-btn').click(function () {
+    let pc_name = $('#vis-type-box-pc-name-label').text();
+    let vis_type = $('#vis-type-box-select').val();
+    window.location.href = '/mypcbase-vis-page/{{folder_name}}/' + pc_name + '/?vis_type=' + vis_type;
+  });
+
+
+
+  $('#vis-type-box-cancel-btn').click(function () {
+    $('#vis-type-box').modal('hide');
+  });
+
+  {% for ele in pc_names %}
+    input_file = '/static/mypcbase/{{folder_name}}/{{ele.pc_name}}.obj';
+    opts['doc_progress_bar_id'] = 'progress-bar-{{ele.pc_name}}'; opts['doc_progress_id'] = 'progress-{{ele.pc_name}}'; opts['progress_hide'] = true;
+    vis(input_file, 'canvas-{{ele.pc_name}}', texture_file_path, objClone(opts));
+
+    $('#vis-btn-{{ele.pc_name}}').click(function () {
+      $('#vis-type-box-pc-name-label').hide();
+      $('#vis-type-box-pc-name-label').text('{{ele.pc_name}}');
+      $('#vis-type-box').modal('show');
+    });
+
+    $('#download-btn-{{ele.pc_name}}').click(function () {
+      window.open('/static/mypcbase/{{folder_name}}/{{ele.pc_name}}.xyz');
+      {% if ele.upsampled %}
+        window.location.href = '/static/mypcbase/{{folder_name}}/upsample/{{ele.pc_name}}.xyz';
+      {% endif %}
+    });
+
+    $('#delete-btn-{{ele.pc_name}}').click(function () {
+      openLoadingBox('正在删除，请稍等...')
+      $.ajax({
+          url: '/mypcbase-delete/',
+          type: 'GET',
+          data: { 'pc_name': '{{ele.pc_name}}', 'folder_name': '{{folder_name}}' },
+          dataType: 'JSON',
+          success: function (data) {
+            closeLoadingBox();
+            if (data.succ == 1) {
+                $('#display-{{ele.pc_name}}').remove();
+                openSuccMsgBox('点云模型已经移至 <a href="/recyclebin-display-page/"><strong>回收站</strong></a> 。');
+            } else {
+                let errmsg = delete_errcode2msg[data.errcode];
+                openErrMsgBox('<strong>抱歉！</strong> 点云模型删除失败：' + errmsg);
+            }
+          }
+      });
+    });
+
+    $('#move-btn-{{ele.pc_name}}').click(function () {
+      $('#move-box-pc-name-label').hide();
+      $('#move-box-pc-name-label').text('{{ele.pc_name}}');
+      $('#move-box').modal('show');
+    });
+
+    $('#upsample-btn-{{ele.pc_name}}').click(async function () {
+      $.ajax({
+          url: '/mypcbase-upsample/',
+          type: 'GET',
+          data: {'pc_name': '{{ele.pc_name}}', 'folder_name': '{{folder_name}}'},
+          dataType: 'JSON',
+          success: function (data) {
+            closeLoadingBox();
+            if (data.succ == 1) {
+                $('#upsample-btn-{{ele.pc_name}}').addClass('hidden');
+                $('#vis-upsample-btn-{{ele.pc_name}}').removeClass('hidden');
+                openSuccMsgBox('点云上采样完成。<a href="/mypcbase-vis-upsample-page/{{folder_name}}/{{ele.pc_name}}/"><strong>查看上采样结果</strong></a>', 15000);
+            } else {
+                let errmsg = upsample_errcode2msg[data.errcode];
+                openErrMsgBox('<strong>抱歉！</strong> 点云上采样失败：' + errmsg);
+            }
+          }
+      });
+
+      let progress = $('#progress-loading-box');
+      let progress_bar = $('#progress-bar-loading-box');
+      openLoadingBox('正在处理，请稍等...', progress_show=true);
+
+      await $.ajax({
+        url: '/mypcbase-clear-temp-dir/',
+        type: 'GET',
+        data: { 'limited_time': 0 },
+        dataType: 'JSON',
+        success: function (data) {}
+      });
+      let sitv1 = setInterval(function () {
+        let param = { 'prog_file_name': 'prog-upsample.txt' };
+        $.ajax({
+            url: '/mypcbase-get-progress-val/',
+            type: 'GET',
+            data: param,
+            dataType: 'JSON',
+            success: function (progress_val) {
+                if (progress_val === -1) { return; }
+                progress_val = parseInt(progress_val / 2);
+                console.log(progress_val)
+                progress_bar.attr('aria-valuenow', progress_val);
+                progress_bar.attr('style', 'width:'+progress_val+'%');
+                progress_bar.html(''+progress_val+'%');
+                if (progress_val === 50) {
+                    // clearInterval(sitv1);
+
+                    new Promise(function (resolve, reject) {
+                      clearInterval(sitv1);
+                      resolve();
+                    }).then(function () {
+                      generate_points_progress_func();
+                    })
+                }
+            }
+        });
+      }, 50);
+
+      async function generate_points_progress_func () {
+        await $.ajax({
+          url: '/mypcbase-clear-temp-dir/',
+          type: 'GET',
+          data: { 'limited_time': 0 },
+          dataType: 'JSON',
+          success: function (data) {}
+        });
+        progress_bar.removeClass('progress-bar-success');
+        let sitv2 = setInterval(function () {
+          let param = { 'prog_file_name': 'prog.txt' };
+          $.ajax({
+              url: '/mypcbase-get-progress-val/',
+              type: 'GET',
+              data: param,
+              dataType: 'JSON',
+              success: function (progress_val) {
+                  if (progress_val === -1) { return; }
+                  progress_val = parseInt(50 + progress_val / 2);
+                  progress_bar.attr('aria-valuenow', progress_val);
+                  progress_bar.attr('style', 'width:'+progress_val+'%');
+                  progress_bar.html(''+progress_val+'%');
+                  if (progress_val === 100) {
+                      progress_bar.addClass('progress-bar-success');
+                      clearInterval(sitv2);
+                  }
+              }
+          });
+        }, 50);
+      }
+    });
+
+    $('#vis-upsample-btn-{{ele.pc_name}}').click(function () {
+      window.location.href = '/mypcbase-vis-upsample-page/{{folder_name}}/{{ele.pc_name}}/'
+    });
+  {% endfor %}
+});
+</script>
+
+{% endblock %}

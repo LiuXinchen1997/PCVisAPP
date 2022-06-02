@@ -1,0 +1,177 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}展示页面{% endblock %}
+
+{% block css %}
+{% endblock %}
+
+{% block breadcrumb %}
+<!-- Content Header (Page header) -->
+<section class="content-header">
+  <h1>
+    回收站
+    <small>展示</small>
+    <button id="restore-all-btn" class="btn btn-xs btn-success">恢复回收站</button>
+    <button id="delete-all-btn" class="btn btn-xs btn-danger">清空回收站</button>
+  </h1>
+  <ol class="breadcrumb">
+    <li><a href="/index/"><i class="fa fa-user"></i>主页</a></li>
+    <li class="active">回收站</li>
+  </ol>
+</section>
+{% endblock %}
+
+{% block content %}
+   <!-- Main content -->
+    <section class="content">
+          <div class="container">
+            <div class="mainbody padding-t20">
+              <div id="display-body" class='row'>
+              {% for folder_name in folder_names %}
+                <div id="display-{{folder_name}}" class='col-xs-3'>
+                  <div class='thumbnail radius-0 border-0 margin-b0'>
+                    <div>
+                      <a href="/recyclebin-folder-display-page/?folder_name={{folder_name}}"><img src="/static/img/folder.png" alt="" /></a>
+                    </div>
+                    <div class="text-center">
+                      <span class="label label-default">目录名：{{folder_name}}</span>
+                    </div>
+                    <div class="text-center">
+                      <button id="open-btn-{{folder_name}}" class="btn btn-xs btn-primary">打开</button>
+                      <button id="restore-btn-{{folder_name}}" class="btn btn-xs btn-success">恢复</button>
+                      <button id="delete-btn-{{folder_name}}" class="btn btn-xs btn-danger">彻底删除</button>
+                    </div>
+                  </div>
+                </div>
+              {% endfor %}
+              </div>
+              {% if show_pages %}
+              <div class="row text-center">
+                <ul class="pagination">
+                  {% if disable_first_page %}
+                  <li class="disabled"><a>首页</a></li>
+                  {% else %}
+                  <li><a href="/recyclebin-display-page/?request_page_id={{first_page_id}}">首页</a></li>
+                  {% endif %}
+                  
+                  {% if disable_prev_page %}
+                  <li class="disabled"><a>&laquo;</a></li>
+                  {% else %}
+                  <li><a href="/recyclebin-display-page/?request_page_id={{prev_page_id}}">&laquo;</a></li>
+                  {% endif %}
+
+                  {% for page_id in page_ids %}
+                  {% if page_id == request_page_id %}
+                  <li class="active"><a>{{page_id}}</a></li>
+                  {% else %}
+                  <li><a href="/recyclebin-display-page/?request_page_id={{page_id}}">{{page_id}}</a></li>
+                  {% endif %}
+                  {% endfor %}
+
+                  {% if disable_next_page %}
+                  <li class="disabled"><a>&raquo;</a></li>
+                  {% else %}
+                  <li><a href="/recyclebin-display-page/?request_page_id={{next_page_id}}">&raquo;</a></li>
+                  {% endif %}
+
+                  {% if disable_last_page %}
+                  <li class="disabled"><a>末页</a></li>
+                  {% else %}
+                  <li><a href="/recyclebin-display-page/?request_page_id={{last_page_id}}">末页</a></li>
+                  {% endif %}
+                </ul>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+    </section>
+{% endblock %}
+
+
+{% block script %}
+
+<script>
+$(function () {
+  $('#restore-all-btn').click(function () {
+    openLoadingBox('正在恢复，请稍等...');
+    $.ajax({
+        url: '/recyclebin-restore-all/',
+        type: 'GET',
+        success: function (data) {
+          closeLoadingBox();
+          if (data.succ == 1) {
+              let children = $('#display-body').children();
+              for (let id = 0; id < children.length; id++) { $(children[id]).remove(); }
+              openSuccMsgBox('回收站已经全部被恢复至 <a href="/mypcbase-display-page/"><strong>我的点云模型库</strong></a> 。', 15000);
+          } else {
+              openErrMsgBox('<strong>抱歉！</strong> 回收站恢复失败。');
+          }
+        }
+    });
+  });
+  
+  $('#delete-all-btn').click(function () {
+    openLoadingBox('正在清理，请稍等...');
+    $.ajax({
+        url: '/recyclebin-delete-all/',
+        type: 'GET',
+        success: function (data) {
+          closeLoadingBox();
+          if (data.succ == 1) {
+              let children = $('#display-body').children();
+              for (let id = 0; id < children.length; id++) { $(children[id]).remove(); }
+              openSuccMsgBox('回收站已经被清空。');
+          } else {
+              openErrMsgBox('<strong>抱歉！</strong> 回收站清理失败。');
+          }
+        }
+    });
+  });
+
+  {% for folder_name in folder_names %}
+  $('#open-btn-{{folder_name}}').click(function () {
+    window.location.href = '/recyclebin-folder-display-page/?folder_name={{folder_name}}';
+  });
+
+  $('#restore-btn-{{folder_name}}').click(function () {
+    openLoadingBox('正在恢复，请稍等...');
+    $.ajax({
+        url: '/recyclebin-folder-restore-all/',
+        type: 'GET',
+        data: { 'folder_name': '{{folder_name}}' },
+        dataType: 'JSON',
+        success: function (data) {
+          closeLoadingBox();
+          if (data.succ == 1) {
+              $('#display-{{folder_name}}').remove();
+              openSuccMsgBox('目录已经被恢复至 <a href="/mypcbase-display-page/"><strong>我的点云模型库</strong></a> 。', 15000);
+          } else {
+              openErrMsgBox('<strong>抱歉！</strong> 目录恢复失败。');
+          }
+        }
+    });
+  });
+
+  $('#delete-btn-{{folder_name}}').click(function () {
+    openLoadingBox('正在清理，请稍等...');
+    $.ajax({
+        url: '/recyclebin-folder-delete-all/',
+        type: 'GET',
+        data: { 'folder_name': '{{folder_name}}' },
+        dataType: 'JSON',
+        success: function (data) {
+          closeLoadingBox();
+          if (data.succ == 1) {
+              $('#display-{{folder_name}}').remove();
+              openSuccMsgBox('目录已经被清空。');
+          } else {
+              openErrMsgBox('<strong>抱歉！</strong> 目录清理失败。');
+          }
+        }
+    });
+  });
+  {% endfor %}
+});
+</script>
+
+{% endblock %}

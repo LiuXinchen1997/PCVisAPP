@@ -1,0 +1,192 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}点云上采样{% endblock %}
+
+{% block css %}
+{% endblock %}
+
+{% block breadcrumb %}
+<!-- Content Header (Page header) -->
+    <section class="content-header">
+      <h1>
+        我的点云模型库
+        <small>上传</small>
+        <button id="display-btn" class="btn btn-xs btn-primary">查看模型</button>
+      </h1>
+      <ol class="breadcrumb">
+        <li><a href="/index/"><i class="fa fa-user"></i>主页</a></li>
+        <li class="active">上传</li>
+      </ol>
+    </section>
+{% endblock %}
+
+{% block content %}
+
+   <!-- Main content -->
+    <section class="content">
+        <div class="row text-center">
+            <h4 class="text-primary">请上传三维点云模型文件（当前支持格式：xyz、npy）</h4>
+        </div>
+        <div class="row">
+            <div class="col-xs-offset-3">
+                <form enctype="multipart/form-data" id="file_form" action="/realUpload/" method="post"> {% csrf_token %}
+                    <input id="file" type="file" class="file" data-upload-url="#" name="file" />
+                </form>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-xs-offset-9">
+                <button id="submit-btn" class="btn btn-sm btn-primary">上传</button>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-xs-6 col-xs-offset-3">
+                <div id="canvas"></div>
+                <div id="progress" class="progress progress-striped">
+                    <div id="progress-bar" class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width:0%">
+                        0%
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="upload-box" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" data-backdrop='static'>
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title" id="myModalLabel"><strong>提示</strong></h4>
+                    </div>
+                    <div class="modal-body">
+                      <div class="form-group">
+                        <label for="name">请选择上传目录</label>
+                        <select id="folder-name-select" class="form-control">
+                            <option selected="selected">default</option>
+                            {% for folder_name in folder_names %}
+                            <option>{{folder_name}}</option>
+                            {% endfor %}
+                        </select>
+                      </div>
+                      <div align="right">
+                        <button class="btn btn-sm btn-primary" id="upload-box-submit-btn">上传</button>
+                        <button class="btn btn-sm btn-secondary" id="upload-box-cancel-btn">取消</button>
+                      </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+{% endblock %}
+
+{% block script %}
+
+<script>
+$(function () {
+    $('#progress').hide();
+
+    let errcode2msg = {
+        1: '原因未知',
+        2: '上传文件格式不正确',
+        3: '张量形状必须为Nx3或Nx6',
+        4: '模型已经存在'
+    }
+
+    $('#display-btn').click(function () {
+        window.location.href = '/mypcbase-display-page/';
+    });
+
+    $('#submit-btn').click(function () {
+        $('#upload-box').modal('show');
+    });
+
+    $('#upload-box-cancel-btn').click(function () {
+        $('#upload-box').modal('hide');
+    });
+
+    $('#upload-box-submit-btn').click(async function () {
+        let folder_name = $('#folder-name-select').val()
+        $('#upload-box').modal('hide');
+
+        let file_form = $('#file_form');
+        let file_upload = $('#file');
+        let file_path = file_upload[0].value;
+
+        // check before POST
+        if (file_path == null || file_path.length == 0) { 
+            openErrMsgBox('您还未上传任何文件！');
+            return; 
+        }
+        let ext = file_path.split('.').pop();
+        if (ext != 'xyz' && ext != 'npy') {
+            openErrMsgBox('<strong>抱歉！</strong> 您上传的文件格式不正确');
+            return;
+        }
+
+        await $.ajax({
+            url: '/mypcbase-clear-temp-dir/',
+            type: 'GET',
+            data: { 'limited_time': 0 },
+            dataType: 'JSON',
+            success: function (data) {}
+        });
+        
+        let progress = $('#progress-loading-box');
+        let progress_bar = $('#progress-bar-loading-box');
+        openLoadingBox('正在上传，请稍等...', progress_show=true);
+        let sitv = setInterval(function () {
+            let param = { 'prog_file_name': 'prog.txt' };
+            $.ajax({
+                url: '/mypcbase-get-progress-val/',
+                type: 'GET',
+                data: param,
+                dataType: 'JSON',
+                success: function (progress_val) {
+                    if (progress_val === -1) { return; }
+                    progress_bar.attr('aria-valuenow', progress_val);
+                    progress_bar.attr('style', 'width:'+progress_val+'%');
+                    progress_bar.html(''+progress_val+'%');
+                    if (progress_val === 100) {
+                        progress_bar.addClass('progress-bar-success');
+                    }
+                }
+            });
+        }, 100);
+        
+        let form_data = new FormData(file_form[0]);
+        form_data.append('folder_name', folder_name);
+        $.ajax({
+            url: '/mypcbase-upload/',
+            type: 'POST',
+            data: form_data,
+            processData: false,
+            contentType: false,
+            success: function (data) {
+                clearInterval(sitv);
+
+                closeLoadingBox();
+                if (data.succ == 1) {
+                    openSuccMsgBox('<strong>恭喜！</strong> 点云文件已成功上传至 <a href="{% url "PointCloudManage:mypcbase-display-page" %}"><strong>我的点云模型库</strong></a>。', 15000);
+                    
+                    $('canvas').remove();
+                    let opts = { 
+                        'height_ratio': 1.6, 
+                        'scale_ratio': 160,
+                        'doc_progress_bar_id': 'progress-bar',
+                        'doc_progress_id': 'progress' 
+                    };
+                    let input_file_path = data.outputpath;
+                    let texture_file_path = '/static/pcupsample/texture.png';
+                    $('#progress').show();
+                    vis(input_file_path, 'canvas', texture_file_path, opts);
+                } else {
+                    let errmsg = errcode2msg[data.errcode];
+                    openErrMsgBox('<strong>抱歉！</strong> 文件上传失败：' + errmsg);
+                }
+            }
+        });
+    });
+});
+</script>
+
+{% endblock %}

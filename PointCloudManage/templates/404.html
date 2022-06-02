@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}展示页面{% endblock %}
+
+{% block css %}
+{% endblock %}
+
+{% block breadcrumb %}
+{% endblock %}
+
+{% block content %}
+   <!-- Main content -->
+    <section class="content">
+      <div class="row">
+        <div class="col-xs-12 text-center">
+          <img src="/static/img/404.png" alt="" />
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-xs-12 text-center">
+          <button id="home-btn" class="btn btn-sm btn-primary">返回主页</button>
+        </div>
+      </div>
+    </section>
+{% endblock %}
+
+
+{% block script %}
+<script>
+$(function () {
+  $('#home-btn').click(function () {
+    window.location.href = '/index/';
+  });
+});
+</script>
+{% endblock %}

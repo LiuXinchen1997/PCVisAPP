@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}展示页面{% endblock %}
+
+{% block css %}
+{% endblock %}
+
+{% block breadcrumb %}
+<!-- Content Header (Page header) -->
+<section class="content-header">
+  <h1>
+    场景分割
+    <small>展示</small>
+  </h1>
+  <ol class="breadcrumb">
+    <li><a href="/index/"><i class="fa fa-user"></i>主页</a></li>
+    <li class="active">展示</li>
+  </ol>
+</section>
+{% endblock %}
+
+{% block content %}
+   <!-- Main content -->
+    <section class="content">
+          <div class="container">
+            <div class="mainbody padding-t20">
+              <div id="display-body" class='row'>
+              {% for pc_name in pc_names %}
+                <div id="display-{{pc_name}}" class='col-xs-4 margin-b20'>
+                  <div class='thumbnail radius-0 border-0 margin-b0'>
+                    <div id="canvas-{{pc_name}}"></div>
+                    <div id="progress-{{pc_name}}" class="progress progress-striped">
+                        <div id="progress-bar-{{pc_name}}" class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width:0%">
+                            0%
+                        </div>
+                    </div>
+                    <div class="text-center">
+                      <span class="label label-default">模型名：{{pc_name}}</span>
+                    </div>
+                    <div class="text-center">
+                      <button id="vis-btn-{{pc_name}}" class="btn btn-xs btn-primary">查看</button>
+                    </div>
+                  </div>
+                </div>
+              {% endfor %}
+              </div>
+              {% if show_pages %}
+              <div class="row text-center">
+                <ul class="pagination">
+                  {% if disable_first_page %}
+                  <li class="disabled"><a>首页</a></li>
+                  {% else %}
+                  <li><a href="/sceneseg-display-page/?request_page_id={{first_page_id}}">首页</a></li>
+                  {% endif %}
+                  
+                  {% if disable_prev_page %}
+                  <li class="disabled"><a>&laquo;</a></li>
+                  {% else %}
+                  <li><a href="/sceneseg-display-page/?request_page_id={{prev_page_id}}">&laquo;</a></li>
+                  {% endif %}
+
+                  {% for page_id in page_ids %}
+                  {% if page_id == request_page_id %}
+                  <li class="active"><a>{{page_id}}</a></li>
+                  {% else %}
+                  <li><a href="/sceneseg-display-page/?request_page_id={{page_id}}">{{page_id}}</a></li>
+                  {% endif %}
+                  {% endfor %}
+
+                  {% if disable_next_page %}
+                  <li class="disabled"><a>&raquo;</a></li>
+                  {% else %}
+                  <li><a href="/sceneseg-display-page/?request_page_id={{next_page_id}}">&raquo;</a></li>
+                  {% endif %}
+                  
+                  {% if disable_last_page %}
+                  <li class="disabled"><a>末页</a></li>
+                  {% else %}
+                  <li><a href="/sceneseg-display-page/?request_page_id={{last_page_id}}">末页</a></li>
+                  {% endif %}
+                </ul>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+    </section>
+{% endblock %}
+
+
+{% block script %}
+
+<script>
+$(function () {
+  let opts = {
+    'height_ratio': 3.0,
+    'scale_ratio': 160
+  };
+  let input_file;
+
+  {% for pc_name in pc_names %}
+    input_file = '/static/sceneseg/color/{{pc_name}}.ply';
+    opts['doc_progress_bar_id'] = 'progress-bar-{{pc_name}}'; opts['doc_progress_id'] = 'progress-{{pc_name}}'; opts['progress_hide'] = true;
+    ply_vis(input_file, 'canvas-{{pc_name}}', objClone(opts));
+
+    $('#vis-btn-{{pc_name}}').click(function () {
+      window.location.href = '/sceneseg-vis-page/?pc_name={{pc_name}}';
+    });
+  {% endfor %}
+});
+</script>
+
+{% endblock %}

@@ -1,0 +1,209 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}展示页面{% endblock %}
+
+{% block css %}
+{% endblock %}
+
+{% block breadcrumb %}
+<!-- Content Header (Page header) -->
+<section class="content-header">
+  <h1>
+    回收站
+    <small>当前目录：{{folder_name}}</small>
+    <button id="back-btn" class="btn btn-xs btn-success">返回上一级</button>
+    <button id="restore-all-btn" class="btn btn-xs btn-success">恢复当前目录</button>
+    <button id="delete-all-btn" class="btn btn-xs btn-danger">清空当前目录</button>
+  </h1>
+  <ol class="breadcrumb">
+    <li><a href="/index/"><i class="fa fa-user"></i>主页</a></li>
+    <li><a href="/recyclebin-display-page/"><i class="fa fa-trash"></i>回收站</a></li>
+    <li class="active"><a><i class="fa fa-folder"></i>{{folder_name}}</a></li>
+  </ol>
+</section>
+{% endblock %}
+
+{% block content %}
+   <!-- Main content -->
+    <section class="content">
+          <div class="container">
+            <div class="mainbody padding-t20">
+              <div id="display-body" class='row'>
+              {% for pc_name in pc_names %}
+                <div id="display-{{pc_name}}" class='col-xs-4 margin-b20'>
+                  <div class='thumbnail radius-0 border-0 margin-b0'>
+                    <div id="canvas-{{pc_name}}"></div>
+                    <div id="progress-{{pc_name}}" class="progress progress-striped">
+                      <div id="progress-bar-{{pc_name}}" class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width:0%">
+                        0%
+                      </div>
+                    </div>
+                    <div class="text-center">
+                      <span class="label label-default">模型名：{{pc_name}}</span>
+                    </div>
+                    <div class="text-center">
+                      <button id="delete-btn-{{pc_name}}" class="btn btn-xs btn-danger">彻底删除</button>
+                      <button id="restore-btn-{{pc_name}}" class="btn btn-xs btn-success">恢复</button>
+                    </div>
+                  </div>
+                </div>
+              {% endfor %}
+              </div>
+              {% if show_pages %}
+              <div class="row text-center">
+                <ul class="pagination">
+                  {% if disable_first_page %}
+                  <li class="disabled"><a>首页</a></li>
+                  {% else %}
+                  <li><a href="/recyclebin-folder-display-page/?folder_name={{folder_name}}&request_page_id={{first_page_id}}">首页</a></li>
+                  {% endif %}
+                  
+                  {% if disable_prev_page %}
+                  <li class="disabled"><a>&laquo;</a></li>
+                  {% else %}
+                  <li><a href="/recyclebin-folder-display-page/?folder_name={{folder_name}}&request_page_id={{prev_page_id}}">&laquo;</a></li>
+                  {% endif %}
+
+                  {% for page_id in page_ids %}
+                  {% if page_id == request_page_id %}
+                  <li class="active"><a>{{page_id}}</a></li>
+                  {% else %}
+                  <li><a href="/recyclebin-folder-display-page/?folder_name={{folder_name}}&request_page_id={{page_id}}">{{page_id}}</a></li>
+                  {% endif %}
+                  {% endfor %}
+
+                  {% if disable_next_page %}
+                  <li class="disabled"><a>&raquo;</a></li>
+                  {% else %}
+                  <li><a href="/recyclebin-folder-display-page/?folder_name={{folder_name}}&request_page_id={{next_page_id}}">&raquo;</a></li>
+                  {% endif %}
+
+                  {% if disable_last_page %}
+                  <li class="disabled"><a>末页</a></li>
+                  {% else %}
+                  <li><a href="/recyclebin-folder-display-page/?folder_name={{folder_name}}&request_page_id={{last_page_id}}">末页</a></li>
+                  {% endif %}
+                </ul>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+    </section>
+{% endblock %}
+
+
+{% block script %}
+
+<script>
+$(function () {
+  let opts = {
+    'height_ratio': 3.0,
+    'scale_ratio': 150
+  };
+  let texture_file_path = '/static/pcupsample/texture.png';
+  let input_file;
+
+  let delete_errcode2msg = {
+    1: '原因未知',
+    2: '模型不存在或已被删除'
+  };
+
+  let restore_errcode2msg = {
+    1: '原因未知',
+    2: '模型不存在',
+    3: '模型已经存在于我的模型库'
+  };
+
+  $('#back-btn').click(function () {
+    window.location.href = '/recyclebin-display-page/';
+  });
+
+  $('#delete-all-btn').click(function () {
+    openLoadingBox('正在清理，请稍等...');
+    $.ajax({
+        url: '/recyclebin-folder-delete-all/',
+        type: 'GET',
+        data: { 'folder_name': '{{folder_name}}' },
+        dataType: 'JSON',
+        success: function (data) {
+          closeLoadingBox();
+          if (data.succ == 1) {
+              let children = $('#display-body').children();
+              for (let id = 0; id < children.length; id++) { $(children[id]).remove(); }
+              openSuccMsgBox('当前目录已经被清空。');
+          } else {
+              openErrMsgBox('<strong>抱歉！</strong> 当前目录清理失败。');
+          }
+        }
+    });
+  });
+
+  $('#restore-all-btn').click(function () {
+    openLoadingBox('正在恢复，请稍等...');
+    $.ajax({
+        url: '/recyclebin-folder-restore-all/',
+        type: 'GET',
+        data: { 'folder_name': '{{folder_name}}' },
+        dataType: 'JSON',
+        success: function (data) {
+          closeLoadingBox();
+          if (data.succ == 1) {
+              let children = $('#display-body').children();
+              for (let id = 0; id < children.length; id++) { $(children[id]).remove(); }
+              openSuccMsgBox('当前目录已经全部被恢复至 <a href="/mypcbase-display-page/"><strong>我的点云模型库</strong></a> 。', 15000);
+          } else {
+              openErrMsgBox('<strong>抱歉！</strong> 当前目录恢复失败。');
+          }
+        }
+    });
+  });
+
+  {% for pc_name in pc_names %}
+    input_file = '/static/recyclebin/{{folder_name}}/{{pc_name}}.obj';
+    opts['doc_progress_bar_id'] = 'progress-bar-{{pc_name}}'; opts['doc_progress_id'] = 'progress-{{pc_name}}'; opts['progress_hide'] = true;
+    vis(input_file, 'canvas-{{pc_name}}', texture_file_path, objClone(opts));
+
+    $('#delete-btn-{{pc_name}}').click(function () {
+      openLoadingBox('正在删除，请稍等...')
+      $.ajax({
+          url: '/recyclebin-delete/',
+          type: 'GET',
+          data: { 'folder_name': '{{folder_name}}', 'pc_name': '{{pc_name}}'},
+          dataType: 'JSON',
+          success: function (data) {
+            closeLoadingBox();
+            if (data.succ == 1) {
+                $('#display-{{pc_name}}').remove();
+                openSuccMsgBox('点云模型已经被彻底删除。');
+            } else {
+                let errmsg = delete_errcode2msg[data.errcode];
+                openErrMsgBox('<strong>抱歉！</strong> 点云模型删除失败：' + errmsg);
+            }
+          }
+      });
+    });
+
+    $('#restore-btn-{{pc_name}}').click(function () {
+      openLoadingBox('正在处理，请稍等...')
+      $.ajax({
+          url: '/recyclebin-restore/',
+          type: 'GET',
+          data: { 'folder_name': '{{folder_name}}', 'pc_name': '{{pc_name}}'},
+          dataType: 'JSON',
+          success: function (data) {
+            closeLoadingBox();
+            if (data.succ == 1) {
+                $('#display-{{pc_name}}').remove();
+                openSuccMsgBox('点云模型已经被恢复至 <a href="/mypcbase-display-page/"><strong>我的点云模型库</strong></a> 。', 15000);
+            } else {
+                let errmsg = restore_errcode2msg[data.errcode];
+                openErrMsgBox('<strong>抱歉！</strong> 点云模型恢复失败：' + errmsg);
+            }
+          }
+      });
+    });
+  {% endfor %}
+});
+</script>
+
+{% endblock %}

@@ -1,0 +1,8 @@
+Django==2.2
+open3d==0.9.0.0
+tensorflow-gpu==1.13.1
+scikit-learn
+plyfile
+opencv-python
+easydict
+tqdm

@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}点云上采样{% endblock %}
+
+{% block css %}
+{% endblock %}
+
+{% block breadcrumb %}
+<!-- Content Header (Page header) -->
+    <section class="content-header">
+      <h1>
+        场景上采样
+        <small>展示</small>
+        <button id="back-btn" class="btn btn-xs btn-success">返回上一级</button>
+      </h1>
+      <ol class="breadcrumb">
+        <li><a href="/index/"><i class="fa fa-user"></i>主页</a></li>
+        <li><a href="/sceneupsample-display-page/"><i class="fa fa-adjust"></i>场景上采样展示</a></li>
+        <li class="active">上采样对比</li>
+      </ol>
+    </section>
+{% endblock %}
+
+{% block content %}
+   <!-- Main content -->
+    <section class="content">
+      <div class="row">
+        <div class="col-xs-12 text-center">
+          <h3>
+            <span class="label label-default">模型名：{{pc_name}}</span>
+          </h3>
+        </div>
+      </div>
+      <div class="row">
+        <div class='col-xs-6'>
+          <div class="text-center">
+            <h4>
+            <span class="label label-default">原始场景</span>
+            </h4>
+          </div>
+          <div id="canvas-raw"></div>
+          <div id="progress-raw" class="progress progress-striped">
+            <div id="progress-bar-raw" class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width:0%">
+              0%
+            </div>
+          </div>
+        </div>
+        
+        <div class='col-xs-6'>
+          <div class="text-center">
+            <h4>
+            <span class="label label-default">上采样场景</span>
+            </h4>
+          </div>
+          <div id="canvas-upsample"></div>
+          <div id="progress-upsample" class="progress progress-striped">
+            <div id="progress-bar-upsample" class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width:0%">
+              0%
+            </div>
+          </div>
+        </div>
+    <!-- /.col -->
+      </div>
+    <!-- /.row -->
+    </section>
+
+{% endblock %}
+
+{% block script %}
+<script>
+$(function () {
+    $('#back-btn').click(function () {
+      window.location.href = '/sceneupsample-display-page/';
+    });
+
+    let raw_file_path = '{{ raw_file_path }}';
+    let upsample_file_path = '{{ upsample_file_path }}';
+    let opts = {
+        'height_ratio': 1.6,
+        'scale_ratio': 200
+    };
+
+    let opts_raw = JSON.parse(JSON.stringify(opts));
+    opts_raw['doc_progress_bar_id'] = 'progress-bar-raw'; opts_raw['doc_progress_id'] = 'progress-raw';
+    ply_vis(raw_file_path, 'canvas-raw', opts_raw);
+    let opts_upsample = JSON.parse(JSON.stringify(opts));
+    opts_upsample['doc_progress_bar_id'] = 'progress-bar-upsample'; opts_upsample['doc_progress_id'] = 'progress-upsample';
+    ply_vis(upsample_file_path, 'canvas-upsample', opts_upsample);
+});
+</script>
+
+{% endblock %}

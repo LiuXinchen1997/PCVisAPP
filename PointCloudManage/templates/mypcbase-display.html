@@ -1,0 +1,296 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}展示页面{% endblock %}
+
+{% block css %}
+{% endblock %}
+
+{% block breadcrumb %}
+<!-- Content Header (Page header) -->
+<section class="content-header">
+  <h1>
+    我的点云模型库
+    <small>展示</small>
+    <button id="upload-btn" class="btn btn-xs btn-success">上传模型</button>
+    <button id="download-all-btn" class="btn btn-xs btn-primary">下载全部模型</button>
+    <button id="create-folder-btn" class="btn btn-xs btn-primary">创建新的目录</button>
+  </h1>
+  <ol class="breadcrumb">
+    <li><a href="/index/"><i class="fa fa-user"></i>主页</a></li>
+    <li class="active">我的点云模型库</li>
+  </ol>
+</section>
+{% endblock %}
+
+{% block content %}
+   <!-- Main content -->
+    <section class="content">
+          <div class="container">
+            <div class="mainbody padding-t20">
+              <div id="display-body" class='row'>
+              {% if request_page_id == 1%}
+              <div id="display-default" class='col-xs-3 margin-b20'>
+                <div class='thumbnail radius-0 border-0 margin-b0'>
+                  <div>
+                    <a href="/mypcbase-folder-display-page/"><img src="/static/img/folder.png" alt="" /></a>
+                  </div>
+                  <div class="text-center">
+                    <span class="label label-default">目录名：default</span>
+                  </div>
+                  <div class="text-center">
+                    <button id="open-btn-default" class="btn btn-xs btn-primary">打开</button>
+                  </div>
+                </div>
+              </div>
+              {% endif %}
+              {% for folder_name in folder_names %}
+                <div id="display-{{folder_name}}" class='col-xs-3'>
+                  <div class='thumbnail radius-0 border-0 margin-b0'>
+                    <div>
+                      <a href="/mypcbase-folder-display-page/?folder_name={{folder_name}}"><img src="/static/img/folder.png" alt="" /></a>
+                    </div>
+                    <div class="text-center">
+                      <span class="label label-default" id="folder-name-span-{{folder_name}}">目录名：{{folder_name}}</span>
+                    </div>
+                    <div class="text-center">
+                      <button id="open-btn-{{folder_name}}" class="btn btn-xs btn-primary">打开</button>
+                      <button id="rename-btn-{{folder_name}}" class="btn btn-xs btn-primary">重命名</button>
+                      
+                      <button id="delete-btn-{{folder_name}}" class="btn btn-xs btn-warning">删除</button>
+                    </div>
+                  </div>
+                </div>
+              {% endfor %}
+              </div>
+              {% if show_pages %}
+              <div class="row text-center">
+                <ul class="pagination">
+                  {% if disable_first_page %}
+                  <li class="disabled"><a>首页</a></li>
+                  {% else %}
+                  <li><a href="/mypcbase-display-page/?request_page_id={{first_page_id}}">首页</a></li>
+                  {% endif %}
+                  
+                  {% if disable_prev_page %}
+                  <li class="disabled"><a>&laquo;</a></li>
+                  {% else %}
+                  <li><a href="/mypcbase-display-page/?request_page_id={{prev_page_id}}">&laquo;</a></li>
+                  {% endif %}
+
+                  {% for page_id in page_ids %}
+                  {% if page_id == request_page_id %}
+                  <li class="active"><a>{{page_id}}</a></li>
+                  {% else %}
+                  <li><a href="/mypcbase-display-page/?request_page_id={{page_id}}">{{page_id}}</a></li>
+                  {% endif %}
+                  {% endfor %}
+
+                  {% if disable_next_page %}
+                  <li class="disabled"><a>&raquo;</a></li>
+                  {% else %}
+                  <li><a href="/mypcbase-display-page/?request_page_id={{next_page_id}}">&raquo;</a></li>
+                  {% endif %}
+                  
+                  {% if disable_last_page %}
+                  <li class="disabled"><a>末页</a></li>
+                  {% else %}
+                  <li><a href="/mypcbase-display-page/?request_page_id={{last_page_id}}">末页</a></li>
+                  {% endif %}
+                </ul>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="modal fade" id="create-folder-box" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" data-backdrop='static'>
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title" id="myModalLabel"><strong>提示</strong></h4>
+                    </div>
+                    <div class="modal-body">
+                      <div class="form-group">
+                        <input type="text" class="form-control" id="folder-name-input" placeholder="请输入目录名称">
+                      </div>
+                      <div align="right">
+                        <button class="btn btn-sm btn-primary" id="create-folder-box-submit-btn">提交</button>
+                        <button class="btn btn-sm btn-secondary" id="create-folder-box-cancel-btn">取消</button>
+                      </div>
+                    </div>
+                </div>
+            </div>
+          </div>
+
+          <div class="modal fade" id="rename-folder-box" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" data-backdrop='static'>
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title" id="myModalLabel"><strong>提示</strong></h4>
+                    </div>
+                    <div class="modal-body">
+                      目录原名：<label id="rename-folder-box-old-folder-name-label"></label>
+                      <div class="form-group">
+                        <input type="text" class="form-control" id="new-folder-name-input" placeholder="请输入目录的新名称">
+                      </div>
+                      <div align="right">
+                        <button class="btn btn-sm btn-primary" id="rename-folder-box-submit-btn">提交</button>
+                        <button class="btn btn-sm btn-secondary" id="rename-folder-box-cancel-btn">取消</button>
+                      </div>
+                    </div>
+                </div>
+            </div>
+          </div>
+    </section>
+{% endblock %}
+
+
+{% block script %}
+
+<script>
+$(function () {
+  let create_folder_errcode2msg = {
+    1: '原因未知',
+    2: '目录名已经存在'
+  }
+
+  let rename_folder_errcode2msg = {
+    1: '原因未知',
+    2: '目录名已经存在'
+  }
+
+  $('#create-folder-btn').click(function () {
+    $('#create-folder-box').modal('show');
+  });
+
+  $('#upload-btn').click(function () {
+    window.location.href = '/mypcbase-upload-page/'
+  });
+
+  $('#create-folder-box-submit-btn').click(function () {
+    let folder_name = $('#folder-name-input').val();
+    if (folder_name === undefined || folder_name === '') {
+      openErrMsgBox('目录名不能为空', duration=3000);
+      return;
+    }
+    if (folder_name === 'default' || folder_name === 'temp') {
+      openErrMsgBox('目录名不合法', duration=3000);
+      return;
+    }
+    
+    $('#create-folder-box').modal('hide');
+    openLoadingBox('正在创建，请稍等...')
+    $.ajax({
+      url: '/mypcbase-create-folder/',
+      type: 'GET',
+      data: { 'folder_name': folder_name },
+      dataType: 'JSON',
+      success: function (data) {
+        closeLoadingBox();
+        if (data.succ == 1) {
+          // openSuccMsgBox('<strong>恭喜！</strong> 创建完成');
+          window.location.href = '/mypcbase-display-page/';
+        } else {
+          openErrMsgBox('<strong>抱歉！</strong> 创建失败：' + create_folder_errcode2msg[data.errcode]);
+        }
+      }
+    });
+  });
+
+  $('#create-folder-box-cancel-btn').click(function () {
+    $('#create-folder-box').modal('hide');
+  });
+
+  $('#download-all-btn').click(function () {
+    openLoadingBox('正在下载，请稍等...')
+    $.ajax({
+      url: '/mypcbase-zip-all/',
+      type: 'GET',
+      success: function (data) {
+        closeLoadingBox();
+        if (data.succ == 1) {
+          openSuccMsgBox('<strong>恭喜！</strong> 下载完成');
+          window.location.href = data.zipfile_url;
+        } else {
+          if (data.errcode == 0) { openErrMsgBox('当前没有模型可以下载。'); }
+          else { openErrMsgBox('<strong>抱歉！</strong> 下载失败'); }
+        }
+      }
+    });
+  });
+
+  $('#open-btn-default').click(function () {
+    window.location.href = '/mypcbase-folder-display-page/';
+  });
+  
+  $('#rename-folder-box-submit-btn').click(function () {
+    let old_folder_name = $('#rename-folder-box-old-folder-name-label').text();
+    let new_folder_name = $('#new-folder-name-input').val();
+
+    if (new_folder_name === undefined || new_folder_name === '') {
+      openErrMsgBox('<strong>抱歉！</strong> 处理失败：新目录名不能为空', duration=3000);
+      return;
+    }
+    if (new_folder_name === 'default' || new_folder_name === 'temp') {
+      openErrMsgBox('<strong>抱歉！</strong> 处理失败：新目录名不合法', duration=3000);
+      return;
+    }
+    if (new_folder_name === old_folder_name) {
+      openErrMsgBox('<strong>抱歉！</strong> 处理失败：新目录名不能与原目录名一致', duration=3000);
+      return;
+    }
+    
+    openLoadingBox('正在处理，请稍等...')
+    $.ajax({
+      url: '/mypcbase-rename-folder/',
+      type: 'GET',
+      data: { 'old_folder_name': old_folder_name, 'new_folder_name': new_folder_name },
+      dataType: 'JSON',
+      success: function (data) {
+        closeLoadingBox();
+        if (data.succ == 1) {
+          $('#rename-folder-box').modal('hide');
+          window.location.href = '/mypcbase-display-page/?request_page_id={{request_page_id}}';
+        } else {
+          openErrMsgBox('<strong>抱歉！</strong> 处理失败：' + rename_folder_errcode2msg[data.errcode]);
+        }
+      }
+    });
+  });
+
+  $('#rename-folder-box-cancel-btn').click(function () {
+    $('#rename-folder-box').modal('hide');
+  });
+  
+  {% for folder_name in folder_names %}
+  $('#open-btn-{{folder_name}}').click(function () {
+    window.location.href = '/mypcbase-folder-display-page/?folder_name={{folder_name}}';
+  });
+
+  $('#rename-btn-{{folder_name}}').click(function () {
+    $('#rename-folder-box-old-folder-name-label').text('{{folder_name}}');
+    $('#rename-folder-box').modal('show');
+  });
+
+  $('#delete-btn-{{folder_name}}').click(function() {
+    openLoadingBox('正在删除，请稍等...')
+    $.ajax({
+      url: '/mypcbase-folder-delete-all/',
+      type: 'GET',
+      data: { 'folder_name': '{{folder_name}}', 'delete_folder': 1 },
+      dataType: 'JSON',
+      success: function (data) {
+        closeLoadingBox();
+        if (data.succ == 1) {
+          $('#display-{{folder_name}}').remove();
+          openSuccMsgBox('<strong>恭喜！</strong> 删除完成，已全部移至 <a href="/recyclebin-display-page/"><strong>回收站</strong></a> 。');
+        } else {
+          openErrMsgBox('<strong>抱歉！</strong> 删除失败');
+        }
+      }
+    });
+  });
+  {% endfor %}
+});
+</script>
+
+{% endblock %}

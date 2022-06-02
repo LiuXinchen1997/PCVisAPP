@@ -1,0 +1,156 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+  <title>Point Cloud Visualization Platform</title>
+  <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+  
+  <!--
+  <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/3.3.6/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
+  -->
+
+  <link rel="stylesheet" href="{% static 'external/bootstrap.min.css' %}" />
+  <link rel="stylesheet" href="{% static 'external/font-awesome-4.7.0/css/font-awesome.min.css' %}" />
+  <link rel="stylesheet" href="{% static 'css/skins/skin-blue.css' %}" />
+  <link rel="stylesheet" href="{% static 'css/base-conf.css' %}" />
+  
+</head>
+
+<body class="hold-transition skin-blue sidebar-mini">
+<div class="wrapper">
+  <header class="main-header">
+    <a href="#" class="logo"></a>
+    <nav class="navbar navbar-static-top" role="navigation">
+      <a href="#" class="sidebar-toggle" data-toggle="push-menu" role="button">
+      </a>
+      <div class="navbar-custom-menu">
+      </div>
+    </nav>
+  </header>
+
+  <aside class="main-sidebar">
+    <section class="sidebar">
+      <ul class="sidebar-menu" data-widget="tree">
+        <li class="header">导航栏</li>
+        <li><a href="{% url 'PointCloudManage:index' %}"><i class="fa fa-user"></i> <span>主页</span></a></li>
+        <li><a href="{% url 'PointCloudManage:pcupsample-display-page' %}"><i class="fa fa-television"></i> <span>点云上采样展示</span></a></li>
+        <li><a href="{% url 'PointCloudManage:sceneupsample-display-page' %}"><i class="fa fa-adjust"></i> <span>场景上采样展示</span></a></li>
+        <li><a href="{% url 'PointCloudManage:segdataset-display-page' %}"><i class="fa fa-print"></i> <span>分割数据集展示</span></a></li>
+        <li><a href="{% url 'PointCloudManage:sceneseg-display-page' %}"><i class="fa fa-tags"></i> <span>场景分割展示</span></a></li>
+        <li><a href="{% url 'PointCloudManage:mypcbase-upload-page' %}"><i class="fa fa-upload"></i> <span>点云模型上传</span></a></li>
+        <li><a href="{% url 'PointCloudManage:mypcbase-display-page' %}"><i class="fa fa-folder"></i> <span>我的点云模型库</span></a></li>
+        <li><a href="{% url 'PointCloudManage:recyclebin-display-page' %}"><i class="fa fa-trash"></i> <span>回收站</span></a></li>
+      </ul>
+    </section>
+  </aside>
+
+  <div class="content-wrapper">
+    {% block breadcrumb %}{% endblock %}
+    <section class="content container-fluid">
+      {% block content %}{% endblock %}
+    </section>
+
+    <div class="modal fade" id="loading" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+          data-backdrop='static'>
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="myModalLabel"><strong>提示</strong></h4>
+                </div>
+                <div class="modal-body">
+                    <div id="progress-loading-box" class="progress progress-striped">
+                      <div id="progress-bar-loading-box" class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width:0%">
+                        0%
+                      </div>
+                    </div>
+                    <div id="loading-body" class="alert alert-info"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="succ-msg-box" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+             data-backdrop='static'>
+          <div class="modal-dialog" role="document">
+              <div class="modal-content">
+                  <div class="modal-header">
+                      <h4 class="modal-title" id="myModalLabel"><strong>提示</strong></h4>
+                  </div>
+                  <div class="modal-body">
+                      <div class="alert alert-success" id="succ-msg-box-body"></div>
+                      <div class="row">
+                          <button type="button" class="btn btn-secondary col-xs-offset-10" id="succ-msg-box-btn">我知道了</button>
+                      </div>
+                  </div>
+              </div>
+          </div>
+      </div>
+
+      <div class="modal fade" id="err-msg-box" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+            data-backdrop='static'>
+          <div class="modal-dialog" role="document">
+              <div class="modal-content">
+                  <div class="modal-header">
+                      <h4 class="modal-title" id="myModalLabel"><strong>提示</strong></h4>
+                  </div>
+                  <div class="modal-body">
+                      <div class="alert alert-danger" id="err-msg-box-body"></div>
+                      <div class="row">
+                          <button type="button" class="btn btn-secondary col-xs-offset-10" id="err-msg-box-btn">我知道了</button>
+                      </div>
+                  </div>
+              </div>
+          </div>
+      </div>
+  </div>
+
+  <footer class="main-footer">
+    <div class="pull-right hidden-xs">
+    </div>
+    <strong><a href="" target="_blank">三维模型可视化展示平台</a></strong>
+  </footer>
+</div>
+
+<!-- 
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/3.3.6/js/bootstrap.min.js"></script>
+<script src="http://www.yanhuangxueyuan.com/threejs/build/three.min.js"></script>
+<script src="http://www.yanhuangxueyuan.com/threejs/examples/js/controls/OrbitControls.js"></script>
+<script src="http://www.yanhuangxueyuan.com/threejs/examples/js/loaders/OBJLoader.js"></script>
+<script src="http://www.yanhuangxueyuan.com/threejs/examples/js/loaders/PLYLoader.js"></script> 
+-->
+
+<script src="{% static 'external/jquery.min.js' %}"></script>
+<script src="{% static 'external/bootstrap.min.js' %}"></script>
+<script src="{% static 'external/three.min.js' %}"></script>
+<script src="{% static 'external/OrbitControls.js' %}"></script>
+<script src="{% static 'external/OBJLoader.js' %}"></script>
+<script src="{% static 'external/PLYLoader.js' %}"></script>
+<script src="{% static 'js/base-conf.js' %}"></script>
+<script src="{% static 'js/utils.js' %}"></script>
+<script>
+  $('#succ-msg-box-btn').click(function () {
+    $('#succ-msg-box').modal('hide');
+  });
+  
+  $('#err-msg-box-btn').click(function () {
+    $('#err-msg-box').modal('hide');
+  });
+  
+  $.ajax({
+    url: '/mypcbase-clear-temp-dir/',
+    type: 'GET',
+    data: { 'limited_time': 1800 },
+    dataType: 'JSON',
+    success: function (data) {}
+  });
+</script>
+
+{% block script %}{% endblock %}
+
+</body>
+</html>

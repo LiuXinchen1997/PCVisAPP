@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}点云上采样{% endblock %}
+
+{% block css %}
+{% endblock %}
+
+{% block breadcrumb %}
+<!-- Content Header (Page header) -->
+    <section class="content-header">
+      <h1>
+        我的点云模型库
+        <small>模型可视化</small>
+      </h1>
+      <ol class="breadcrumb">
+        <li><a href="/index/"><i class="fa fa-user"></i>主页</a></li>
+        <li><a href="/mypcbase-display-page/"><i class="fa fa-folder"></i>我的点云模型库</a></li>
+        <li class="active">模型可视化</li>
+      </ol>
+    </section>
+{% endblock %}
+
+{% block content %}
+   <!-- Main content -->
+    <section class="content">
+      <div class="row">
+        <div class="col-xs-12 text-center">
+            <h3>
+              <span class="label label-default">模型名</span>
+              <a href=""><span class="label label-primary">下载</span></a>
+            </h3>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-xs-9">
+            <div id="canvas"></div>
+            <div id="progress" class="progress progress-striped">
+                <div id="progress-bar" class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width:0%">
+                    0%
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xs-3">
+            <select id="size-select" class="form-control">
+              <option>0.005</option>
+              <option>0.01</option>
+              <option>0.05</option>
+              <option>0.1</option>
+            </select>
+
+            <button id="op-btn" class="btn btn-xs btn-primary">点击</button>
+        </div>
+      </div>
+    </section>
+
+{% endblock %}
+
+{% block script %}
+<script>
+$(function () {
+    let pc_file_path = '/static/models/4.ply';
+    let doc_canvas_id = 'canvas';
+    let opts = { 'height_ratio': 1.6, 'rotated': false, 'scale_ratio': 160 }
+
+    ply_vis(pc_file_path, doc_canvas_id, opts);
+
+    $('#op-btn').click(function () {
+        $('canvas').remove();
+        ply_vis(pc_file_path, doc_canvas_id, opts);
+    });
+});
+</script>
+
+{% endblock %}

@@ -1,0 +1,319 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}点云上采样{% endblock %}
+
+{% block css %}
+{% endblock %}
+
+{% block breadcrumb %}
+<!-- Content Header (Page header) -->
+    <section class="content-header">
+      <h1>
+        我的点云模型库
+        <small>模型可视化</small>
+        <button id="back-btn" class="btn btn-xs btn-success">返回上一级</button>
+      </h1>
+      <ol class="breadcrumb">
+        <li><a href="/index/"><i class="fa fa-user"></i>主页</a></li>
+        <li><a href="/mypcbase-display-page/"><i class="fa fa-folder"></i>我的点云模型库</a></li>
+        <li><a href='/mypcbase-folder-display-page/?folder_name={{folder_name}}'><i class="fa fa-folder"></i>{{folder_name}}</a></li>
+        <li class="active">模型可视化</li>
+      </ol>
+    </section>
+{% endblock %}
+
+{% block content %}
+   <!-- Main content -->
+    <section class="content">
+      <div class="row">
+        <div class="col-xs-12 text-center">
+          <h3>
+            <span class="label label-default">模型名：{{pc_name}}</span>
+            <a href="/static/mypcbase/{{folder_name}}/{{pc_name}}.xyz"><span class="label label-primary">下载</span></a>
+          </h3>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-xs-9">
+            <div id="canvas"></div>
+            <div id="progress" class="progress progress-striped">
+                <div id="progress-bar" class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width:0%">
+                    0%
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xs-3">
+          <div class="row form-group">
+            <label class="col-xs-12 control-label">点的颜色</label>
+          </div>
+          <div class="row form-group">
+            <label for="point-color-r-slider" class="col-xs-1 control-label">R</label>
+            <label id="point-color-r-slider-val" class="col-xs-1 label label-default">255</label>
+            <div class="col-xs-10">
+              <input type="range" name="slider" id="point-color-r-slider" min="0" max="255" step="1" value="255" />
+            </div>
+          </div>
+          <div class="row form-group">
+            <label for="point-color-g-slider" class="col-xs-1 control-label">G</label>
+            <label id="point-color-g-slider-val" class="col-xs-1 label label-default">69</label>
+            <div class="col-xs-10">
+              <input type="range" name="slider" id="point-color-g-slider" min="0" max="255" step="1" value="69" />
+            </div>
+          </div>
+          <div class="row form-group">
+            <label for="point-color-b-slider" class="col-xs-1 control-label">B</label>
+            <label id="point-color-b-slider-val" class="col-xs-1 label label-default">0</label>
+            <div class="col-xs-10">
+              <input type="range" name="slider" id="point-color-b-slider" min="0" max="255" step="1" value="0" />
+            </div>
+          </div>
+
+          <div class="row form-group">
+            <label class="col-xs-12 control-label">环境光</label>
+          </div>
+          <div class="row form-group">
+            <label for="ambient-light-r-slider" class="col-xs-1 control-label">R</label>
+            <label id="ambient-light-r-slider-val" class="col-xs-1 label label-default">255</label>
+            <div class="col-xs-10">
+              <input type="range" name="slider" id="ambient-light-r-slider" min="0" max="255" step="1" value="255" />
+            </div>
+          </div>
+          <div class="row form-group">
+            <label for="ambient-light-g-slider" class="col-xs-1 control-label">G</label>
+            <label id="ambient-light-g-slider-val" class="col-xs-1 label label-default">255</label>
+            <div class="col-xs-10">
+              <input type="range" name="slider" id="ambient-light-g-slider" min="0" max="255" step="1" value="255" />
+            </div>
+          </div>
+          <div class="row form-group">
+            <label for="ambient-light-b-slider" class="col-xs-1 control-label">B</label>
+            <label id="ambient-light-b-slider-val" class="col-xs-1 label label-default">255</label>
+            <div class="col-xs-10">
+              <input type="range" name="slider" id="ambient-light-b-slider" min="0" max="255" step="1" value="255" />
+            </div>
+          </div>
+
+          <div class="row form-group">
+            <label class="col-xs-12 control-label">方向光</label>
+          </div>
+          <div class="row form-group">
+            <label for="direct-light-r-slider" class="col-xs-1 control-label">R</label>
+            <label id="direct-light-r-slider-val" class="col-xs-1 label label-default">255</label>
+            <div class="col-xs-10">
+              <input type="range" name="slider" id="direct-light-r-slider" min="0" max="255" step="1" value="255" />
+            </div>
+          </div>
+          <div class="row form-group">
+            <label for="direct-light-g-slider" class="col-xs-1 control-label">G</label>
+            <label id="direct-light-g-slider-val" class="col-xs-1 label label-default">255</label>
+            <div class="col-xs-10">
+              <input type="range" name="slider" id="direct-light-g-slider" min="0" max="255" step="1" value="255" />
+            </div>
+          </div>
+          <div class="row form-group">
+            <label for="direct-light-b-slider" class="col-xs-1 control-label">B</label>
+            <label id="direct-light-b-slider-val" class="col-xs-1 label label-default">255</label>
+            <div class="col-xs-10">
+              <input type="range" name="slider" id="direct-light-b-slider" min="0" max="255" step="1" value="255" />
+            </div>
+          </div>
+          <div class="row form-group">
+            <label for="direct-light-i-slider" class="col-xs-1 control-label">I</label>
+            <label id="direct-light-i-slider-val" class="col-xs-1 label label-default">0.5</label>
+            <div class="col-xs-10">
+              <input type="range" name="slider" id="direct-light-i-slider" min="0" max="1" step="0.01" value="0.5" />
+            </div>
+          </div>
+
+          <div class="row form-group">
+            <label for="rotate-speed-slider" class="col-xs-3 control-label">旋转速度</label>
+            <div class="col-xs-9">
+              <input type="range" name="slider" id="rotate-speed-slider" min="0.0" max="0.05" step="0.001" value="0.01" />
+            </div>
+          </div>
+
+          <div class="row form-group">
+            <label for="rotate-axis-select" class="col-xs-3 control-label">旋转轴</label>
+            <div class="col-xs-9">
+              <select id="rotate-axis-select" class="form-control">
+                <option>x</option>
+                <option selected>y</option>
+                <option>z</option>
+                <option>-x</option>
+                <option>-y</option>
+                <option>-z</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="row form-group">
+            <label for="canvas-color-select" class="col-xs-3 control-label">幕布颜色</label>
+            <div class="col-xs-9">
+              <select id="canvas-color-select" class="form-control">
+                <option selected>纯白</option>
+                <option>浅灰</option>
+                <option>亚麻色</option>
+                <option>柠檬黄</option>
+                <option>蜜瓜绿</option>
+                <option>淡绿</option>
+                <option>淡蓝</option>
+                <option>橙红</option>
+                <option>纯黑</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="row form-group">
+            <div class="col-xs-12" align="right">
+              <button id="reset-btn" class="btn btn-sm btn-primary">重置</button>
+              <button id="render-btn" class="btn btn-sm btn-primary">渲染</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+{% endblock %}
+
+{% block script %}
+<script>
+$(function () {
+    function get_ambient_light_color () {
+      let ambient_light_r = parseInt($('#ambient-light-r-slider').val());
+      let ambient_light_g = parseInt($('#ambient-light-g-slider').val());
+      let ambient_light_b = parseInt($('#ambient-light-b-slider').val());
+      let ambient_light_hex = RGB2Hex(ambient_light_r, ambient_light_g, ambient_light_b);
+      return ambient_light_hex;
+    }
+
+    function get_direct_light_color () {
+      let direct_light_r = parseInt($('#direct-light-r-slider').val());
+      let direct_light_g = parseInt($('#direct-light-g-slider').val());
+      let direct_light_b = parseInt($('#direct-light-b-slider').val());
+      let direct_light_hex = RGB2Hex(direct_light_r, direct_light_g, direct_light_b);
+      return direct_light_hex;
+    }
+    
+    $('#back-btn').click(function () {
+      window.location.href = '/mypcbase-folder-display-page/?folder_name={{folder_name}}';
+    });
+    
+    let point_color_r = parseInt($('#point-color-r-slider').val());
+    let point_color_g = parseInt($('#point-color-g-slider').val());
+    let point_color_b = parseInt($('#point-color-b-slider').val());
+    $('#point-color-r-slider').change(function () {
+      $('#point-color-r-slider-val').text($('#point-color-r-slider').val());
+    });
+    $('#point-color-g-slider').change(function () {
+      $('#point-color-g-slider-val').text($('#point-color-g-slider').val());
+    });
+    $('#point-color-b-slider').change(function () {
+      $('#point-color-b-slider-val').text($('#point-color-b-slider').val());
+    });
+    $('#ambient-light-r-slider').change(function () {
+      $('#ambient-light-r-slider-val').text($('#ambient-light-r-slider').val());
+    });
+    $('#ambient-light-g-slider').change(function () {
+      $('#ambient-light-g-slider-val').text($('#ambient-light-g-slider').val());
+    });
+    $('#ambient-light-b-slider').change(function () {
+      $('#ambient-light-b-slider-val').text($('#ambient-light-b-slider').val());
+    });
+    $('#direct-light-r-slider').change(function () {
+      $('#direct-light-r-slider-val').text($('#direct-light-r-slider').val());
+    });
+    $('#direct-light-g-slider').change(function () {
+      $('#direct-light-g-slider-val').text($('#direct-light-g-slider').val());
+    });
+    $('#direct-light-b-slider').change(function () {
+      $('#direct-light-b-slider-val').text($('#direct-light-b-slider').val());
+    });
+    $('#direct-light-i-slider').change(function () {
+      $('#direct-light-i-slider-val').text($('#direct-light-i-slider').val());
+    });
+    
+    let doc_canvas_id = 'canvas';
+    let pc_file_path = '{{ pc_file_path }}';
+    let opts = {
+        'height_ratio': 1.4,
+        'scale_ratio': 160,
+        'doc_progress_bar_id': 'progress-bar',
+        'doc_progress_id': 'progress',
+        'rotate_speed': parseFloat($('#rotate-speed-slider').val()),
+        'rotate_axis': $('#rotate-axis-select').val(),
+        'canvas_color': $('#canvas-color-select').val(),
+        'ambient_light_color': get_ambient_light_color(),
+        'direct_light_color': get_direct_light_color(),
+        'direct_light_intensity': parseFloat($('#direct-light-i-slider').val()),
+    };
+    
+    let texture_file_path = '/static/img/texture/default.png';
+    vis(pc_file_path, 'canvas', texture_file_path, opts);
+
+    $('#render-btn').click(function () {
+      openLoadingBox('正在处理，请稍等...');
+      opts['rotate_speed'] = parseFloat($('#rotate-speed-slider').val());
+      opts['rotate_axis'] = $('#rotate-axis-select').val();
+      opts['canvas_color'] = $('#canvas-color-select').val();
+      opts['ambient_light_color'] = get_ambient_light_color();
+      opts['direct_light_color'] = get_direct_light_color();
+      opts['direct_light_intensity'] = parseFloat($('#direct-light-i-slider').val());
+
+      let cur_point_color_r = parseInt($('#point-color-r-slider').val());
+      let cur_point_color_g = parseInt($('#point-color-g-slider').val());
+      let cur_point_color_b = parseInt($('#point-color-b-slider').val());
+      if (cur_point_color_r === point_color_r && cur_point_color_g === point_color_g && cur_point_color_b === point_color_b) {
+        $('canvas').remove();
+        vis(pc_file_path, doc_canvas_id, texture_file_path, opts);
+        closeLoadingBox();
+      } else {
+        point_color_r = cur_point_color_r;
+        point_color_g = cur_point_color_g;
+        point_color_b = cur_point_color_b;
+        $.ajax({
+          url: '/mypcbase-get-texture-path/',
+          type: 'GET',
+          data: { 'red': point_color_r, 'green': point_color_g, 'blue': point_color_b },
+          dataType: 'JSON',
+          success: function (data) {
+            if (data.succ == 1) {
+              $('canvas').remove();
+              texture_file_path = data.texture_file_path;
+              vis(pc_file_path, doc_canvas_id, texture_file_path, opts);
+            }
+            closeLoadingBox();
+          }
+        });
+      }
+    });
+
+    $('#reset-btn').click(function () {
+      $('#point-color-r-slider').val(255);
+      $('#point-color-r-slider-val').text(255);
+      $('#point-color-g-slider').val(69);
+      $('#point-color-g-slider-val').text(69);
+      $('#point-color-b-slider').val(0);
+      $('#point-color-b-slider-val').text(0);
+      $('#ambient-light-r-slider').val(255);
+      $('#ambient-light-r-slider-val').text(255);
+      $('#ambient-light-g-slider').val(255);
+      $('#ambient-light-g-slider-val').text(255);
+      $('#ambient-light-b-slider').val(255);
+      $('#ambient-light-b-slider-val').text(255);
+      $('#direct-light-r-slider').val(255);
+      $('#direct-light-r-slider-val').text(255);
+      $('#direct-light-g-slider').val(255);
+      $('#direct-light-g-slider-val').text(255);
+      $('#direct-light-b-slider').val(255);
+      $('#direct-light-b-slider-val').text(255);
+      $('#direct-light-i-slider').val(0.5);
+      $('#direct-light-i-slider-val').text(0.5);
+      $('#rotate-speed-slider').val(0.01);
+      $('#rotate-axis-select').val('y');
+      $('#canvas-color-select').val('纯白');
+    });
+});
+</script>
+
+{% endblock %}
