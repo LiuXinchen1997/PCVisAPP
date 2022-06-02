@@ -62,49 +62,49 @@
 
 ## 3.1 主页
 
-![](./resource/index.gif)
+![gif图片未加载见resource目录](./resource/index.gif)
 
 ## 3.2 展示模块
 
 ### 3.2.1 点云上采样展示
 
-![](./resource/pcupsample.gif)
+![gif图片未加载见resource目录](./resource/pcupsample.gif)
 
 ### 3.2.2 场景上采样展示
 
-![](./resource/sceneupsample.gif)
+![gif图片未加载见resource目录](./resource/sceneupsample.gif)
 
 ### 3.2.3 分割数据集展示
 
-![](./resource/segdataset.gif)
+![gif图片未加载见resource目录](./resource/segdataset.gif)
 
 ### 3.2.4 场景分割展示
 
-![](./resource/sceneseg.gif)
+![gif图片未加载见resource目录](./resource/sceneseg.gif)
 
 ## 3.3 模型管理模块
 
 ### 3.3.1 模型上传
 
-![](./resource/mypcbase-upload.gif)
+![gif图片未加载见resource目录](./resource/mypcbase-upload.gif)
 
 ### 3.3.2 模型管理
 
-![](./resource/mypcbase-file-manage.gif)
+![gif图片未加载见resource目录](./resource/mypcbase-file-manage.gif)
 
 ### 3.3.3 模型删除与回收站
 
-![](./resource/mypcbase-file-delete.gif)
+![gif图片未加载见resource目录](./resource/mypcbase-file-delete.gif)
 
 ## 3.4 模型渲染模块
 
 ### 3.4.1 obj渲染
 
-![](./resource/mypcbase-vis-obj.gif)
+![gif图片未加载见resource目录](./resource/mypcbase-vis-obj.gif)
 
 ### 3.4.2 ply渲染
 
-![](./resource/mypcbase-vis-ply.gif)
+![gif图片未加载见resource目录](./resource/mypcbase-vis-ply.gif)
 
 # 4 更进一步
 
