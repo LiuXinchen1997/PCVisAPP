@@ -46,7 +46,11 @@
     sh compile_ops.sh
     ```
 
-4. 下载参考测试数据。本步骤为可选，可将[参考测试数据](https://drive.google.com/file/d/1hb78WSrDIp2GRBp63lhRISAsDxK-y7_o/view?usp=sharing)解压并覆盖于`static`目录下。
+4. 下载[参考测试数据](https://drive.google.com/file/d/1hb78WSrDIp2GRBp63lhRISAsDxK-y7_o/view?usp=sharing)。本步骤为可选，可将[参考测试数据](https://drive.google.com/file/d/1hb78WSrDIp2GRBp63lhRISAsDxK-y7_o/view?usp=sharing)解压并覆盖于`static`目录下。
+
+    - [下载链接：Google Drive](https://drive.google.com/file/d/1hb78WSrDIp2GRBp63lhRISAsDxK-y7_o/view?usp=sharing)
+
+    - [下载链接：百度云（提取码：i353）](https://pan.baidu.com/s/1vbjg-n5-DBMyE-55gNg6jw)
 
 5. 运行系统。运行之前需要修改`PointCloudManage/upsample_op/config.py`内`CFG.gpu`为可使用的GPU。
 
@@ -56,7 +60,51 @@
 
 # 3 效果展示
 
+## 3.1 主页
+
 ![](./resource/index.gif)
+
+## 3.2 展示模块
+
+### 3.2.1 点云上采样展示
+
+![](./resource/pcupsample.gif)
+
+### 3.2.2 场景上采样展示
+
+![](./resource/sceneupsample.gif)
+
+### 3.2.3 分割数据集展示
+
+![](./resource/segdataset.gif)
+
+### 3.2.4 场景分割展示
+
+![](./resource/sceneseg.gif)
+
+## 3.3 模型管理模块
+
+### 3.3.1 模型上传
+
+![](./resource/mypcbase-upload.gif)
+
+### 3.3.2 模型管理
+
+![](./resource/mypcbase-file-manage.gif)
+
+### 3.3.3 模型删除与回收站
+
+![](./resource/mypcbase-file-delete.gif)
+
+## 3.4 模型渲染模块
+
+### 3.4.1 obj渲染
+
+![](./resource/mypcbase-vis-obj.gif)
+
+### 3.4.2 ply渲染
+
+![](./resource/mypcbase-vis-ply.gif)
 
 # 4 更进一步
 
