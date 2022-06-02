@@ -56,7 +56,7 @@
 
 # 3 效果展示
 
-![](./resource/a.gif)
+![](./resource/index.gif)
 
 # 4 更进一步
 
