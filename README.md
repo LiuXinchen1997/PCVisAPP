@@ -1,124 +1,128 @@
-# 1 项目介绍
+# PCVisAPP
 
-本项目为本人毕业设计研究内容的展示系统，主要聚焦于三维点云上采样与语义分割应用。该系统包括了三维模型的算法处理展示、三维模型上传与管理、三维模型渲染管理等功能，现将其开源，以方便后续有做三维计算机视觉研究的同学做展示使用，也欢迎star/fork/pr/issue，帮助系统更好的完善 :-)
+Languages: English | [Chinese](./README.zh-CN.md)
 
-## 1.1 技术依赖
+## 1. Project Introduction
 
-- 前端依赖：jQuery + Bootstrap3 + ThreeJS + Font-Awesome
+PCVisAPP is a demonstration system for graduation-design research work, focusing on 3D point cloud upsampling and semantic segmentation. The system includes algorithm-processing demos for 3D models, 3D model upload and management, and web-based 3D model rendering controls.
 
-- 后端依赖：Django
+This project is open sourced for students and researchers working on 3D computer vision who need a practical visualization and presentation system. Stars, forks, pull requests, and issues are welcome to help improve the project :-)
 
-- 其它依赖：TensorFlow
+### 1.1 Dependencies
 
-## 1.2 功能介绍
+- Frontend: jQuery, Bootstrap 3, Three.js, Font Awesome
+- Backend: Django
+- Other: TensorFlow
 
-### 1.2.1 展示模块
+### 1.2 Features
 
-该模块主要为三维模型的算法处理展示，包括了点云上采样展示、场景上采样展示、分割数据集展示、场景分割展示等功能，展示内容一般为原始模型、处理生成模型和标准模型。
+#### 1.2.1 Demo Module
 
-### 1.2.2 模型管理模块
+This module demonstrates algorithm processing for 3D models, including point cloud upsampling, scene upsampling, segmentation dataset visualization, and scene segmentation. Each demo usually displays the original model, generated model, and ground-truth model.
 
-该模块是一个简易的文件管理系统，主要为对三维点云模型进行管理，包括了创建目录、重命名目录、删除目录、上传模型、查看模型、下载模型、移动模型、删除模型、上采样模型、回收站管理等功能。
+#### 1.2.2 Model Management Module
 
-### 1.2.3 模型渲染模块
+This module is a lightweight file management system for 3D point cloud models. It supports creating directories, renaming directories, deleting directories, uploading models, viewing models, downloading models, moving models, deleting models, upsampling models, and managing the recycle bin.
 
-该模块主要为对三维模型进行网页端的渲染控制，通过调节参数以达到理想的渲染效果。
+#### 1.2.3 Model Rendering Module
 
-# 2 环境配置
+This module provides web-based rendering controls for 3D models. Users can adjust rendering parameters to achieve the desired visual effect.
 
-1. 创建虚拟环境**visapp**并激活（默认当前已在项目根目录**PCVisAPP**）。
+## 2. Environment Setup
+
+1. Create and activate the `pcvisapp` conda environment. The following commands assume that you are already in the project root directory, `PCVisAPP`.
 
     ```shell
     conda create -n pcvisapp python=3.6 --yes
     conda activate pcvisapp
     ```
 
-2. 安装Python Package依赖。
+2. Install Python package dependencies.
 
     ```shell
     pip install -r requirements.txt
     ```
 
-3. 编译tf算子。注意，如果当前环境不方便安装tensorflow-gpu或者没有GPU可忽略本步骤，但为了确保系统仍能够正常运行，需要将`PointCloudManage/utils.py`中的代码`from PointCloudManage.upsample_op.model import Model`注释，并适当修改方法`upsample_points`。实际上，方法`upsample_points`的目标即调用基于tf的神经网络对三维点云模型进行上采样操作，该方法内也可替换成你的点云处理算法。
+3. Compile the TensorFlow operators. If installing `tensorflow-gpu` is inconvenient in your environment, or if no GPU is available, you can skip this step. To keep the system running without this operator, comment out `from PointCloudManage.upsample_op.model import Model` in `PointCloudManage/utils.py` and adjust the `upsample_points` method accordingly.
+
+    The purpose of `upsample_points` is to call a TensorFlow-based neural network to upsample 3D point cloud models. You can also replace the implementation with your own point cloud processing algorithm.
 
     ```shell
     cd PointCloudManage/upsample_op/tf_ops
     sh compile_ops.sh
     ```
 
-4. 下载[参考测试数据](https://drive.google.com/file/d/1hb78WSrDIp2GRBp63lhRISAsDxK-y7_o/view?usp=sharing)。本步骤为可选，可将[参考测试数据](https://drive.google.com/file/d/1hb78WSrDIp2GRBp63lhRISAsDxK-y7_o/view?usp=sharing)解压并覆盖于`static`目录下。
+4. Download the [reference test data](https://drive.google.com/file/d/1hb78WSrDIp2GRBp63lhRISAsDxK-y7_o/view?usp=sharing). This step is optional. You can extract the data and overwrite the `static` directory.
 
-    - [下载链接：Google Drive](https://drive.google.com/file/d/1hb78WSrDIp2GRBp63lhRISAsDxK-y7_o/view?usp=sharing)
+    - [Download from Google Drive](https://drive.google.com/file/d/1hb78WSrDIp2GRBp63lhRISAsDxK-y7_o/view?usp=sharing)
+    - [Download from Baidu Netdisk, extraction code: i353](https://pan.baidu.com/s/1vbjg-n5-DBMyE-55gNg6jw)
 
-    - [下载链接：百度云（提取码：i353）](https://pan.baidu.com/s/1vbjg-n5-DBMyE-55gNg6jw)
-
-5. 运行系统。运行之前需要修改`PointCloudManage/upsample_op/config.py`内`CFG.gpu`为可使用的GPU。
+5. Run the system. Before running it, update `CFG.gpu` in `PointCloudManage/upsample_op/config.py` to an available GPU.
 
     ```shell
     python manage.py runserver 0.0.0.0:<ip_port>
     ```
 
-# 3 效果展示
+## 3. Screenshots and Demos
 
-## 3.1 主页
+### 3.1 Home Page
 
-![gif图片未加载见resource目录](./resource/index.gif)
+![Home page demo](./resource/index.gif)
 
-## 3.2 展示模块
+### 3.2 Demo Module
 
-### 3.2.1 点云上采样展示
+#### 3.2.1 Point Cloud Upsampling Demo
 
-![gif图片未加载见resource目录](./resource/pcupsample.gif)
+![Point cloud upsampling demo](./resource/pcupsample.gif)
 
-### 3.2.2 场景上采样展示
+#### 3.2.2 Scene Upsampling Demo
 
-![gif图片未加载见resource目录](./resource/sceneupsample.gif)
+![Scene upsampling demo](./resource/sceneupsample.gif)
 
-### 3.2.3 分割数据集展示
+#### 3.2.3 Segmentation Dataset Demo
 
-![gif图片未加载见resource目录](./resource/segdataset.gif)
+![Segmentation dataset demo](./resource/segdataset.gif)
 
-### 3.2.4 场景分割展示
+#### 3.2.4 Scene Segmentation Demo
 
-![gif图片未加载见resource目录](./resource/sceneseg.gif)
+![Scene segmentation demo](./resource/sceneseg.gif)
 
-## 3.3 模型管理模块
+### 3.3 Model Management Module
 
-### 3.3.1 模型上传
+#### 3.3.1 Model Upload
 
-![gif图片未加载见resource目录](./resource/mypcbase-upload.gif)
+![Model upload demo](./resource/mypcbase-upload.gif)
 
-### 3.3.2 模型管理
+#### 3.3.2 Model Management
 
-![gif图片未加载见resource目录](./resource/mypcbase-file-manage.gif)
+![Model management demo](./resource/mypcbase-file-manage.gif)
 
-### 3.3.3 模型删除与回收站
+#### 3.3.3 Model Deletion and Recycle Bin
 
-![gif图片未加载见resource目录](./resource/mypcbase-file-delete.gif)
+![Model deletion and recycle bin demo](./resource/mypcbase-file-delete.gif)
 
-## 3.4 模型渲染模块
+### 3.4 Model Rendering Module
 
-### 3.4.1 obj渲染
+#### 3.4.1 OBJ Rendering
 
-![gif图片未加载见resource目录](./resource/mypcbase-vis-obj.gif)
+![OBJ rendering demo](./resource/mypcbase-vis-obj.gif)
 
-### 3.4.2 ply渲染
+#### 3.4.2 PLY Rendering
 
-![gif图片未加载见resource目录](./resource/mypcbase-vis-ply.gif)
+![PLY rendering demo](./resource/mypcbase-vis-ply.gif)
 
-# 4 更进一步
+## 4. Future Work
 
-1. 用户权限管理系统
+1. User permission management system
+2. Automatic rendering-page generation system
 
-2. 渲染页面自动生成系统
-
-# 5 参考项目
+## 5. References
 
 [[1] TensorFlow](https://www.tensorflow.org/)
 
 [[2] jQuery](https://jquery.com/)
 
-[[3] Bootstrap · The most popular HTML, CSS, and JS library](https://getbootstrap.com/)
+[[3] Bootstrap, the most popular HTML, CSS, and JS library](https://getbootstrap.com/)
 
 [[4] Three.js - JavaScript 3D Library](https://threejs.org/)
 
